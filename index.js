@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb"); // step: 5
 require("dotenv").config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5002;
 const app = express();
 
 // middleware, step: 2
@@ -21,35 +21,29 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect(); // step 8
+    await client.connect();
     const productCollection = client.db("emaJohn").collection("product");
-
+    
     app.get("/product", async (req, res) => {
-      console.log('query', req.query)
-      // for pagination
+      console.log('query', req.query);
       const page = parseInt(req.query.page);
-      const size = parseInt(req.query.size); // converted to number
-
-      const query = {}; // query will find every id
+      const size = parseInt(req.query.size);
+      const query = {};
       const cursor = productCollection.find(query);
-
-      // for pagination
       let products;
       if(page || size){
-        products = await cursor.skip(page*size).limit(size).toArray(); // 0 --> skip: 0 get: 0-10
+        products = await cursor.skip(page*size).limit(size).toArray();
       }
       else{
         products = await cursor.toArray();
       }
       res.send(products);
-    }); // step 9
+    });
 
-    app.get("/productcount", async(req, res) =>{
-      // const query = {};
-      // const cursor = productCollection.find(query); // I will know the cursor count
-      const count = await productCollection.estimatedDocumentCount(); // estDocCnt suggested by MongoDB
-      res.send({count}); // dont send a number {}
-    }) // step 10
+    app.get("/productCount", async(req, res) =>{
+      const count = await productCollection.estimatedDocumentCount();
+      res.send({count});
+    })
 
     // use post to get products by ids
     app.post("/productbykeys", async(req, res) =>{
